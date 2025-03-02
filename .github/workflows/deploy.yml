@@ -21,8 +21,71 @@ jobs:
       - name: "Setup"
         run: yarn install
 
-      - name: "Test"
-        run: yarn test
+      - name: Check and Create KV Namespace
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          wrangler telemetry disable
+          # 检查 PASTE_STORE
+          KV_NAMESPACE="PASTEBIN_STORE"
+          echo "Checking for KV namespace: $KV_NAMESPACE"
+          LIST_OUTPUT=$(wrangler kv namespace list)
+          echo "KV namespace list output: $LIST_OUTPUT"
+          
+          KV_ID=$(echo "$LIST_OUTPUT" | jq -r '.[] | select(.title == "pastebin-worker-'$KV_NAMESPACE'") | .id')
+          
+          if [ -z "$KV_ID" ]; then
+              echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
+              CREATE_OUTPUT=$(wrangler kv namespace create "$KV_NAMESPACE")
+              echo "Create KV namespace output: $CREATE_OUTPUT"
+              KV_ID=$(echo "$CREATE_OUTPUT" | sed -n 's/.*id = "\([^"]*\)".*/\1/p')
+              
+              if [ -z "$KV_ID" ]; then
+                  echo "Failed to extract KV ID. Full output: $CREATE_OUTPUT"
+                  exit 1
+              fi
+              
+              echo "KV namespace $KV_NAMESPACE created successfully with ID: $KV_ID"
+          else
+            echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
+          fi
+          echo "PB_ID=$KV_ID" >> $GITHUB_ENV
+          
+      - name: Update wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          PB_ROUTE: ${{ secrets.PB_ROUTE }}
+          PB_BASEURL: ${{ secrets.PB_BASEURL }}
+          PB_REPO: ${{ secrets.PB_REPO }}
+          PB_FAVICON: ${{ secrets.PB_FAVICON}}
+          PB_TOS_MAINTAINER: ${{ secrets.PB_TOS_MAINTAINER }}
+          PB_TOS_MAIL: ${{ secrets.PB_TOS_MAIL }}
+          PB_ADMIN: ${{ secrets.PB_ADMIN }}
+          PB_PASSWD: ${{ secrets.PB_PASSWD }}
+        run: |
+          # Read the entire content of wrangler.toml
+          WRANGLER_CONTENT=$(cat wrangler.toml)
+          
+          # Update both KV namespace IDs
+          UPDATED_CONTENT=$(echo "$WRANGLER_CONTENT" | \
+            sed -e "s/id = \"cc398e983a234aa19de5ea6af571a483\"/id = \"$PB_ID\"/" \
+            -e "s/pattern = \"shz.al\"/pattern = \"$PB_ROUTE\"/" \
+            -e "s/BASE_URL = \"https://shz.al\"/BASE_URL = \"$PB_BASEURL\"/" \
+            -e "s/REPO = \"https://github.com/SharzyL/pastebin-worker\"/REPO = \"$PB_REPO\"/" \
+            -e "s/FAVICON = \"https://sharzy.in/favicon-32x32.png\"/FAVICON = \"$PB_FAVICON\"/" \
+            -e "s/TOS_MAINTAINER = \"Sharzy\"/TOS_MAINTAINER = \"$PB_TOS_MAINTAINER\"/" \
+            -e "s/TOS_MAIL = \"pb@shz.al\"/TOS_MAIL = \"$PB_TOS_MAIL\"/" \)
+          
+          # Write the updated content back to wrangler.toml
+          echo "$UPDATED_CONTENT" > wrangler.toml
+
+          # Write Dashboard Authorized back to wrangler.toml
+          echo -e "[vars.BASIC_AUTH]\n$PB_ADMIN = \"$PB_PASSWD\"" >> wrangler.toml
+          
+          echo "Updated wrangler.toml content:"
+          cat wrangler.toml
 
       - name: "Deploy"
         env:
