@@ -40,14 +40,14 @@ jobs:
           wrangler telemetry disable
           # 检查 PASTE_STORE
           KV_NAMESPACE="PASTEBIN_STORE"
-          echo "Checking for KV namespace: $KV_NAMESPACE"
+          echo "Checking for KV namespace: $PB_NAME-$KV_NAMESPACE"
           LIST_OUTPUT=$(wrangler kv namespace list)
           echo "KV namespace list output: $LIST_OUTPUT"
           
-          KV_ID=$(echo "$LIST_OUTPUT" | jq -r '.[] | select(.title == "$PB_NAME-'$KV_NAMESPACE'") | .id')
+          KV_ID=$(echo "$LIST_OUTPUT" | jq -r '.[] | select(.title == "'$PB_NAME'-'$KV_NAMESPACE'") | .id')
           
           if [ -z "$KV_ID" ]; then
-              echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
+              echo "KV namespace $PB_NAME-$KV_NAMESPACE does not exist. Creating..."
               CREATE_OUTPUT=$(wrangler kv namespace create "$KV_NAMESPACE")
               echo "Create KV namespace output: $CREATE_OUTPUT"
               KV_ID=$(echo "$CREATE_OUTPUT" | sed -n 's/.*id = "\([^"]*\)".*/\1/p')
@@ -57,9 +57,9 @@ jobs:
                   exit 1
               fi
               
-              echo "KV namespace $KV_NAMESPACE created successfully with ID: $KV_ID"
+              echo "KV namespace $PB_NAME-$KV_NAMESPACE created successfully with ID: $KV_ID"
           else
-            echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
+            echo "KV namespace $PB_NAME-$KV_NAMESPACE already exists with ID: $KV_ID"
           fi
           echo "PB_ID=$KV_ID" >> $GITHUB_ENV
 
