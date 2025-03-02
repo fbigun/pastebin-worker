@@ -59,12 +59,13 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          PB_ROUTE: ${{ secrets.PB_ROUTE }}
-          PB_BASEURL: ${{ secrets.PB_BASEURL }}
-          PB_REPO: ${{ secrets.PB_REPO }}
-          PB_FAVICON: ${{ secrets.PB_FAVICON}}
-          PB_TOS_MAINTAINER: ${{ secrets.PB_TOS_MAINTAINER }}
-          PB_TOS_MAIL: ${{ secrets.PB_TOS_MAIL }}
+          PB_NAME: ${{ vars.PB_NAME }}
+          PB_ROUTE: ${{ vars.PB_ROUTE }}
+          PB_BASEURL: ${{ vars.PB_BASEURL }}
+          PB_REPO: ${{ vars.PB_REPO }}
+          PB_FAVICON: ${{ vars.PB_FAVICON}}
+          PB_TOS_MAINTAINER: ${{ vars.PB_TOS_MAINTAINER }}
+          PB_TOS_MAIL: ${{ vars.PB_TOS_MAIL }}
           PB_ADMIN: ${{ secrets.PB_ADMIN }}
           PB_PASSWD: ${{ secrets.PB_PASSWD }}
         run: |
@@ -74,12 +75,13 @@ jobs:
           # Update both KV namespace IDs
           UPDATED_CONTENT=$(echo "$WRANGLER_CONTENT" | \
             sed -e "s/id = \"cc398e983a234aa19de5ea6af571a483\"/id = \"$PB_ID\"/" \
+            -e "s/name = \"pb\"/name = \"$PB_NAME\"/" \
             -e "s/pattern = \"shz.al\"/pattern = \"$PB_ROUTE\"/" \
             -e "s/BASE_URL = \"https://shz.al\"/BASE_URL = \"$PB_BASEURL\"/" \
             -e "s/REPO = \"https://github.com/SharzyL/pastebin-worker\"/REPO = \"$PB_REPO\"/" \
             -e "s/FAVICON = \"https://sharzy.in/favicon-32x32.png\"/FAVICON = \"$PB_FAVICON\"/" \
             -e "s/TOS_MAINTAINER = \"Sharzy\"/TOS_MAINTAINER = \"$PB_TOS_MAINTAINER\"/" \
-            -e "s/TOS_MAIL = \"pb@shz.al\"/TOS_MAIL = \"$PB_TOS_MAIL\"/" \)
+            -e "s/TOS_MAIL = \"pb@shz.al\"/TOS_MAIL = \"$PB_TOS_MAIL\"/")
           
           # Write the updated content back to wrangler.toml
           echo "$UPDATED_CONTENT" > wrangler.toml
