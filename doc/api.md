@@ -1,31 +1,29 @@
-# API Reference
+# API 参考说明
 
-## GET `/`
+## GET `/`
 
-Return the index page.
+返回索引页面。
 
-## **GET** `/<name>[.<ext>]` or `/<name>/<filename>[.<ext>]`
+## **GET** `/<name>[.<ext>]` or `/<name>/<filename>[.<ext>]`
 
-Fetch the paste with name `<name>`. By default, it will return the raw content of the paste.
+获取名称为 `<name>` 的粘贴内容。默认情况下，它将返回粘贴的原始内容。
 
-The `Content-Type` header is set to `text/plain;charset=UTF-8`. If `<ext>` is given, the worker will infer mime-type from `<ext>` and change `Content-Type`. This method accepts the following query string parameters:
+`Content-Type` 头部会被设置为 `text/plain;charset=UTF-8`。如果指定了 `<ext>`，服务器会根据 `<ext>` 推断 MIME 类型并更改 `Content-Type`。此方法接受以下查询字符串参数：
 
-The `Content-Disposition` header is set to `inline` by default. But can be overriden by `?a` query string. If the paste is uploaded with filename, or `<filename>` is set in given request URL, `Content-Disposition` is appended with `filename*` indicating the filename (with `<ext>` if it exists).
+`Content-Disposition` 头部默认设置为 `inline`。但可以通过 `?a` 查询字符串进行覆盖。如果粘贴上传时带有文件名，或者在给定的请求 URL 中设置了 `<filename>`，`Content-Disposition` 会附加 `filename*` 来指示文件名（如果存在 `<ext>` 也会包含）。
 
-- `?a=`: optional. Set `Content-Disposition` to `attachment` if present.
+- `?a=`: 可选。若存在该参数，则将 `Content-Disposition` 设置为 `attachment`。
+- `?lang=<lang>`: 可选。返回一个由 prism.js 提供语法高亮功能的网页。
+- `?mime=<mime>`: 可选。指定 MIME 类型，忽略 `<ext>` 的影响。如果指定了 `lang`，则此参数无效（这种情况下 MIME 类型始终为 `text/html`）。
 
-- `?lang=<lang>`: optional. Returns a web page with syntax highlight powered by prism.js.
+示例：`GET /abcd?lang=js`，`GET /abcd?mime=application/json`。
 
-- `?mime=<mime>`: optional. Specify the mime-type, suppressing the effect of `<ext>`. No effect if `lang` is specified (in which case the mime-type is always `text/html`).
+如果发生错误，服务器将返回不同于 `200` 的状态码：
 
-Examples: `GET /abcd?lang=js`, `GET /abcd?mime=application/json`.
+- `404`: 未找到指定名称的粘贴。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-If error occurs, the worker returns status code different from `200`:
-
-- `404`: the paste of given name is not found.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
-
-Usage example:
+使用示例：
 
 ```shell
 $ curl https://shz.al/i-p-
@@ -39,25 +37,25 @@ $ curl 'https://shz.al/~panty.jpg?mime=image/png' -w '%{content_type}' -o /dev/n
 image/png;charset=UTF-8
 ```
 
-## GET `/<name>:<passwd>`
+## GET `/<name>:<passwd>`
 
-Return the web page to edit the paste of name `<name>` and password `<passwd>`.
+返回用于编辑名称为 `<name>` 且密码为 `<passwd>` 的粘贴内容的网页。
 
-If error occurs, the worker returns status code different from `200`:
+如果发生错误，服务器将返回不同于 `200` 的状态码：
 
-- `404`: the paste of given name is not found.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
+- `404`: 未找到指定名称的粘贴。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-## GET `/u/<name>`
+## GET `/u/<name>`
 
-Redirect to the URL recorded in the paste of name `<name>`.
+重定向到名称为 `<name>` 的粘贴中记录的 URL。
 
-If error occurs, the worker returns status code different from `302`:
+如果发生错误，服务器将返回不同于 `302` 的状态码：
 
-- `404`: the paste of given name is not found.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
+- `404`: 未找到指定名称的粘贴。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-Usage example:
+使用示例：
 
 ```shell
 $ firefox https://shz.al/u/i-p-
@@ -65,18 +63,18 @@ $ firefox https://shz.al/u/i-p-
 $ curl -L https://shz.al/u/i-p-
 ```
 
-## GET `/a/<name>`
+## 获取 `/a/<name>`
 
-Return the HTML converted from the markdown file stored in the paste of name `<name>`. The markdown conversion follows GitHub Flavored Markdown (GFM) Spec, supported by [remark-gfm](https://github.com/remarkjs/remark-gfm).
+返回从名称为 `<name>` 的粘贴中存储的 Markdown 文件转换而来的 HTML。Markdown 转换遵循 GitHub 风格 Markdown (GFM) 规范，由 [remark-gfm](https://github.com/remarkjs/remark-gfm) 提供支持。
 
-Syntax highlighting is supported by [prims.js](https://prismjs.com/). LaTeX mathematics is supported by [MathJax](https://www.mathjax.org).
+语法高亮由 [prism.js](https://prismjs.com/) 提供支持。LaTeX 数学公式由 [MathJax](https://www.mathjax.org/) 提供支持。
 
-If error occurs, the worker returns status code different from `200`:
+如果发生错误，服务器将返回不同于 `200` 的状态码：
 
-- `404`: the paste of given name is not found.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
+- `404`: 未找到指定名称的粘贴。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-Usage example:
+使用示例：
 
 ```md
 # Header 1
@@ -99,7 +97,7 @@ bar | baz
  - A2
 - B
 
-![Panty](https://shz.al/~panty.jpg)
+![Panty](Z-%E9%99%84%E4%BB%B6/f383d7455843af2f38744204589bc397_MD5.jpg)
 
 1. first
 2. second
@@ -118,21 +116,17 @@ $ curl -Fc=@test.md -Fn=test-md https://shz.al
 $ firefox https://shz.al/a/~test-md
 ```
 
-## **POST** `/`
+## **POST** `/`
 
-Upload your paste. It accept parameters in form-data:
+上传你的粘贴内容。它接受表单数据中的以下参数：
 
-- `c`: mandatory. The **content** of your paste, text of binary. It should be no larger than 10 MB. The `filename` in its `Content-Disposition` will be present when fetching the paste.
+- `c`: 必需。粘贴的 **内容**，可以是文本或二进制数据。其大小不应超过 10 MB。获取粘贴内容时，`Content-Disposition` 中的 `filename` 会显示出来。
+- `e`: 可选。粘贴的 **过期** 时间。在此时间段过后，粘贴内容将被永久删除。它可以是一个整数或浮点数，后面可跟一个可选的单位（默认为秒）。支持的单位有：`s`（秒）、`m`（分钟）、`h`（小时）、`d`（天）、`M`（月）。例如，`360.24` 表示 360.25 秒；`25d` 表示 25 天。由于 Cloudflare KV 存储的限制，该时间不应小于 60 秒。
+- `s`: 可选。用于修改和删除粘贴内容的 **密码**。如果未指定，服务器将生成一个随机字符串作为密码。
+- `n`: 可选。你为粘贴内容自定义的 **名称**。如果未指定，服务器将生成一个随机字符串（默认 4 个字符）作为名称。获取自定义名称的粘贴内容时，需要在名称前加上 `~`。名称长度至少为 3 个字符，可由字母、数字以及 `+_-[]*$=@,;/` 中的字符组成。
+- `p`: 可选。**私有模式** 标志。如果指定了任何值，粘贴的名称长度将为 24 个字符。如果使用了 `n` 参数，此标志无效。
 
-- `e`: optional. The **expiration** time of the paste. After this period of time, the paste is permanently deleted. It should be an integer or a float point number suffixed with an optional unit (seconds by default). Supported units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `M` (months). For example, `360.24` means 360.25 seconds; `25d` is interpreted as 25 days. It should be no smaller than 60 seconds due to the limitation of Cloudflare KV storage.
-
-- `s`: optional. The **password** which allows you to modify and delete the paste. If not specified, the worker will generate a random string as password.
-
-- `n`: optional. The customized **name** of your paste. If not specified, the worker will generate a random string (4 characters by default) as the name. You need to prefix the name with `~` when fetching the paste of customized name. The name is at least 3 characters long, consisting of alphabet, digits and characters in `+_-[]*$=@,;/`.
-
-- `p`: optional. The flag of **private mode**. If specified to any value, the name of the paste is as long as 24 characters. No effect if `n` is used.
-
-`POST` method returns a JSON string by default, if no error occurs, for example:
+如果没有发生错误，`POST` 方法默认返回一个 JSON 字符串，例如：
 
 ```json
 {
@@ -143,22 +137,22 @@ Upload your paste. It accept parameters in form-data:
 }
 ```
 
-Explanation of the fields:
+字段说明：
 
-- `url`: String. The URL to fetch the paste. When using a customized name, it looks like `https//shz.al/~myname`.
-- `suggestUrl`: String or null. The URL that may carry filename or URL redirection.
-- `admin`: String. The URL to update and delete the paste, which is `url` suffixed by `~` and the password.
-- `expire`: String or null. The expiration seconds.
-- `isPrivate`: Bool. Whether the paste is in private mode.
+- `url`: 字符串。用于获取粘贴内容的 URL。使用自定义名称时，格式类似 `https://shz.al/~myname`。
+- `suggestUrl`: 字符串或 null。可能携带文件名或 URL 重定向的 URL。
+- `admin`: 字符串。用于更新和删除粘贴内容的 URL，是在 `url` 后面加上 `~` 和密码。
+- `expire`: 字符串或 null。过期秒数。
+- `isPrivate`: 布尔值。表示粘贴内容是否处于私有模式。
 
-If error occurs, the worker returns status code different from `200`:
+如果发生错误，服务器将返回不同于 `200` 的状态码：
 
-- `400`: your request is in bad format.
-- `409`: the name is already used.
-- `413`: the content is too large.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
+- `400`: 你的请求格式错误。
+- `409`: 名称已被使用。
+- `413`: 内容太大。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-Usage example:
+使用示例：
 
 ```shell
 $ curl -Fc="kawaii" -Fe=300 -Fn=hitagi https://shz.al  # uploading some text
@@ -186,25 +180,25 @@ $ curl -Fc=@panty.jpg -Fn='"hi/hello;g,ood"' -Fs=12345678 https://shz.al
 }
 ```
 
-## **PUT** `/<name>:<passwd>`
+## **PUT** `/<name>:<passwd>`
 
-Update you paste of the name `<name>` and password `<passwd>`. It accept the parameters in form-data:
+更新名称为 `<name>` 且密码为 `<passwd>` 的粘贴内容。它接受表单数据中的以下参数：
 
-- `c`: mandatory. Same as `POST` method.
-- `e`: optional. Same as `POST` method. Note that the deletion time is now recalculated.
-- `s`: optional. Same as `POST` method.
+- `c`: 必需。与 `POST` 方法中的 `c` 参数相同。
+- `e`: 可选。与 `POST` 方法中的 `e` 参数相同。注意，删除时间会重新计算。
+- `s`: 可选。与 `POST` 方法中的 `s` 参数相同。
 
-The returning of `PUT` method is the same as `POST` method.
+`PUT` 方法的返回结果与 `POST` 方法相同。
 
-If error occurs, the worker returns status code different from `200`:
+如果发生错误，服务器将返回不同于 `200` 的状态码：
 
-- `400`: your request is in bad format.
-- `403`: your password is not correct.
-- `404`: the paste of given name is not found.
-- `413`: the content is too large.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
+- `400`: 你的请求格式错误。
+- `403`: 你的密码不正确。
+- `404`: 未找到指定名称的粘贴。
+- `413`: 内容太大。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-Usage example:
+使用示例：
 
 ```shell
 $ curl -X PUT -Fc="kawaii~" -Fe=500 https://shz.al/~hitagi:22@-OJWcTOH2jprTJWYadmDv
@@ -223,17 +217,17 @@ $ curl -X PUT -Fc="kawaii~" https://shz.al/~hitagi:22@-OJWcTOH2jprTJWYadmDv
 }
 ```
 
-## DELETE `/<name>:<passwd>`
+## DELETE `/<name>:<passwd>`
 
-Delete the paste of name `<name>` and password `<passwd>`. It may take seconds to synchronize the deletion globally.
+删除名称为 `<name>` 且密码为 `<passwd>` 的粘贴内容。全局同步删除操作可能需要几秒钟。
 
-If error occurs, the worker returns status code different from `200`:
+如果发生错误，服务器将返回不同于 `200` 的状态码：
 
-- `403`: your password is not correct.
-- `404`: the paste of given name is not found.
-- `500`: unexpected exception. You may report this to the author to give it a fix.
+- `403`: 你的密码不正确。
+- `404`: 未找到指定名称的粘贴。
+- `500`: 出现意外异常。你可以将此问题报告给开发者进行修复。
 
-Usage example:
+使用示例：
 
 ```shell
 $ curl -X DELETE https://shz.al/~hitagi:22@-OJWcTOH2jprTJWYadmDv
