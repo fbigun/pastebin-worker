@@ -28,12 +28,12 @@ enabled = true
 
 [[routes]]
 # Refer to https://developers.cloudflare.com/workers/wrangler/configuration/#routes
-pattern = "shz.al"
+pattern = "pb.180770.xyz"
 custom_domain = true
 
 [[kv_namespaces]]
 binding = "PB"  # do not touch this
-id = "435f8959b9de485ea48751ba557d90f5"  # id of your KV namespace
+id = "d2b2e5eaf357473f8afbad4c1a1ac119"  # id of your KV namespace
 
 [[r2_buckets]]
 binding = "R2"  # do not touch this
@@ -41,19 +41,19 @@ bucket_name = "pb-shz-al"  # bucket name of your R2 bucket
 
 [vars]
 # must be consistent with your routes
-DEPLOY_URL = "https://shz.al"
+DEPLOY_URL = "https://pb.180770.xyz"
 
 # url to repo, displayed in the index page
-REPO = "https://github.com/SharzyL/pastebin-worker"
+REPO = "https://github.com/fbigun/pastebin-worker"
 
 # the page title displayed in index page
 INDEX_PAGE_TITLE = "Pastebin Worker"
 
 # the name displayed in TOS
-TOS_MAINTAINER = "Sharzy"
+TOS_MAINTAINER = "fbigun"
 
 # the email displayed in TOS
-TOS_MAIL = "pb@shz.al"
+TOS_MAIL = "olutyo@gmail.com"
 
 # Cache-Control max-age for static pages
 CACHE_STATIC_PAGE_AGE = 7200
