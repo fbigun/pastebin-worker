@@ -1,4 +1,4 @@
-name = "pb"
+name = "pastebin-worker"
 compatibility_date = "2025-04-24"
 
 workers_dev = false
